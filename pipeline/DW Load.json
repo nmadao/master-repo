@@ -1,0 +1,172 @@
+{
+	"name": "DW Load",
+	"properties": {
+		"activities": [
+			{
+				"name": "ODS DB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "DW Truncate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "dbo.Airline"
+					},
+					{
+						"name": "Destination",
+						"value": "ADF.DimAirline"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 100,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzStorageStaging",
+							"type": "LinkedServiceReference"
+						},
+						"path": "output"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Code",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "Code",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "Airline_Code",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Airline_Code",
+									"type": "String"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ODStoDW",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "LoadToDW",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "DW Truncate",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_TruncateStaging]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzDW",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Load Dim",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ODS DB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_LoadDimensions]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzDW",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Load Fact",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Load Dim",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_LoadFact]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzDW",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
