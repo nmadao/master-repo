@@ -3,8 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
-				"type": "Copy",
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -13,23 +13,71 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [
-					{
-						"name": "Source",
-						"value": "input//"
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "Json1",
+						"type": "DatasetReference"
 					},
+					"fieldList": [
+						"itemName",
+						"lastModified",
+						"size"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings"
+					},
+					"formatSettings": {
+						"type": "JsonReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
 					{
-						"name": "Destination",
-						"value": "output//"
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "test",
+					"value": {
+						"value": "@activity('Get Metadata1').output.lastModified",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
 				"typeProperties": {
 					"source": {
 						"type": "DelimitedTextSource",
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFileName": "*",
+							"wildcardFileName": "*.csv",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -39,7 +87,11 @@
 					"sink": {
 						"type": "DelimitedTextSink",
 						"storeSettings": {
-							"type": "AzureBlobStorageWriteSettings"
+							"type": "AzureBlobStorageWriteSettings",
+							"copyBehavior": {
+								"value": "@(pipeline().TriggerTime).zip",
+								"type": "Expression"
+							}
 						},
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
@@ -71,6 +123,16 @@
 				]
 			}
 		],
+		"parameters": {
+			"FileName": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"test": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
