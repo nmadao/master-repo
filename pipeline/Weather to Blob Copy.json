@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy_o46",
+				"name": "Copy data1",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -15,27 +15,31 @@
 				},
 				"userProperties": [
 					{
+						"name": "Source",
+						"value": "input//"
+					},
+					{
 						"name": "Destination",
-						"value": "input//201612-WeatherData.txt"
+						"value": "output//"
 					}
 				],
 				"typeProperties": {
 					"source": {
-						"type": "JsonSource",
+						"type": "DelimitedTextSource",
 						"storeSettings": {
-							"type": "HttpReadSettings",
-							"requestMethod": "GET",
-							"additionalHeaders": "x-apikey: 5a31643dcb25c1076c7cd9ab\nContent-Type: application/json"
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFileName": "*",
+							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
-							"type": "JsonReadSettings"
+							"type": "DelimitedTextReadSettings"
 						}
 					},
 					"sink": {
 						"type": "DelimitedTextSink",
 						"storeSettings": {
-							"type": "AzureBlobStorageWriteSettings",
-							"copyBehavior": "MergeFiles"
+							"type": "AzureBlobStorageWriteSettings"
 						},
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
@@ -44,62 +48,24 @@
 						}
 					},
 					"enableStaging": false,
-					"enableSkipIncompatibleRow": false,
 					"translator": {
 						"type": "TabularTranslator",
-						"mappings": [
-							{
-								"source": {
-									"path": "$['_id']"
-								},
-								"sink": {
-									"name": "_id"
-								}
-							},
-							{
-								"source": {
-									"path": "$['date']"
-								},
-								"sink": {
-									"name": "date"
-								}
-							},
-							{
-								"source": {
-									"path": "$['dateint']"
-								},
-								"sink": {
-									"name": "dateint"
-								}
-							},
-							{
-								"source": {
-									"path": "$['airport']"
-								},
-								"sink": {
-									"name": "airport"
-								}
-							},
-							{
-								"source": {
-									"path": "$['temp']"
-								},
-								"sink": {
-									"name": "temp"
-								}
-							}
-						]
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
 					}
 				},
 				"inputs": [
 					{
-						"referenceName": "SourceDataset_o46",
+						"referenceName": "DelimitedText1",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "DestinationDataset_o46",
+						"referenceName": "DelimitedText2",
 						"type": "DatasetReference"
 					}
 				]
