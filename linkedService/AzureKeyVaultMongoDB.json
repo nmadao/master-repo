@@ -1,0 +1,10 @@
+{
+	"name": "AzureKeyVaultMongoDB",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kvault1test.vault.azure.net/"
+		}
+	}
+}
