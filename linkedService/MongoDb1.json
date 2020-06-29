@@ -10,9 +10,9 @@
 					"referenceName": "AzureKeyVaultMongoDB",
 					"type": "LinkedServiceReference"
 				},
-				"secretName": "MongoCredentials"
+				"secretName": "MongoDBSecret"
 			},
-			"database": "sample_analytics"
+			"database": "sample_airbnb"
 		},
 		"connectVia": {
 			"referenceName": "SHIRMongoDB",
